@@ -26,6 +26,10 @@ app.post("/mail/:person", function (req, res, next) {
 
 });
 
+app.get("/ping", function (req, res) {
+    res.send("pong");
+});
+
 /*
 Sends a mail to ernesmancebo@gmail.com
 */
@@ -47,7 +51,7 @@ var buildMessageToErnesto = function (person) {
     return sendMail(person);
 };
 
-var sendMail = function(person) {
+var sendMail = function (person) {
     var me = this;
 
     me.user = 'postmaster@sandboxbb9cd8eede1b4371acea54621c16c420.mailgun.org';
@@ -72,7 +76,7 @@ var sendMail = function(person) {
 
     var response = buildResponse();
 
-    transporter.sendMail(mailOptions, function(err, info) {
+    transporter.sendMail(mailOptions, function (err, info) {
         if (err) {
             console.log('Something went wrong:\n' + err);
 
