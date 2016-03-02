@@ -3,7 +3,7 @@ var bodyParser = require("body-parser");
 var nodemailer = require('nodemailer');
 
 var app = express();
-var port = 8080;
+var port = 80;
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
@@ -104,6 +104,6 @@ var buildResponse = function (msg) {
     };
 };
 
-app.listen(port, function () {
+app.listen(process.env.PORT || port, function () {
     console.log('Server started @ port ' + port);
 });
