@@ -30,6 +30,11 @@ app.get("/ping", function (req, res) {
     res.send("pong");
 });
 
+app.get('/', function(request, response) {
+    var result = 'App is running'
+    response.send(result);
+});
+
 /*
 Sends a mail to ernesmancebo@gmail.com
 */
