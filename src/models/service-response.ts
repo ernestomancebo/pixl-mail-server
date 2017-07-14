@@ -1,6 +1,6 @@
 export interface ServiceResponse {
-  status: boolean;
-  statusCode: number;
+  success: boolean;
+  statusCode: string;
   message: string;
   errorList: string[];
 }

@@ -1,8 +1,9 @@
 import { PersonContact } from './models/person-contact';
 import { MailClient } from './mail-client';
-import { createTransport, Transporter } from 'nodemailer'
+import { ServiceResponse } from './models/service-response';
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
+import { ERROR_INVALID, ErrorMap } from './models/error-mapping';
 
 var app = express();
 var port = 80;
@@ -12,20 +13,18 @@ app.use(bodyParser.urlencoded({
   extended: true
 }));
 
-app.post("/mail/:person", function (req, res, next) {
+app.post("/mail", function (req, res, next) {
   var response = {};
-  switch (req.params.person) {
-    case 'ernesto':
-      response = doMail(req.body);
-      break;
-    default:
-      // do the corresponding
-      response = buildResponse({});
-      break;
+  const reqBody = req.body;
+
+  if (reqBody && [].indexOf(reqBody.who) > -1) {
+    // Handle valid request
+  } else {
+    // Handle invalid request
+    response = buildInvalidParametersRespone();
   }
 
   res.send(response);
-
 });
 
 app.get("/ping", function (req, res) {
@@ -56,7 +55,7 @@ var sendMail = function (person) {
 
   me.user = '';
   me.pass = '';
-  var transporter = createTransport('smtps://' + me.user + ':' + me.pass + '@smtp.mailgun.org');
+  var transporter = undefined; // nodemailer.createTransport('smtps://' + me.user + ':' + me.pass + '@smtp.mailgun.org');
 
   var msg = '';
   msg += "<h1>" + person.name + " wants to contact you</h1>\n";
@@ -103,7 +102,18 @@ var buildResponse = function (msg) {
     statusCode: 200
   };
 };
+const buildInvalidParametersRespone = (): ServiceResponse => {
+  let response: ServiceResponse = {
+    success: false,
+    message: ERROR_INVALID.errorDescription,
+    statusCode: ERROR_INVALID.errorCode,
+    errorList: [
+      `${ERROR_INVALID.errorCode}: ${ERROR_INVALID.errorDescription}`
+    ]
+  };
 
+  return response;
+}
 app.listen(process.env.PORT || port, function () {
   console.log('Server started @ port ' + port);
 });
