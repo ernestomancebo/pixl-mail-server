@@ -1,119 +1,64 @@
 import { PersonContact } from './models/person-contact';
 import { MailClient } from './mail-client';
+import { ERROR_BAD_REQUEST_CODE } from './models/error-mapping';
 import { ServiceResponse } from './models/service-response';
+import { ResponseUtil } from './util/response-util';
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
-import { ERROR_INVALID, ErrorMap } from './models/error-mapping';
+import * as cors from 'cors';
+import * as fs from 'fs';
 
-var app = express();
-var port = 80;
+const app = express();
+let mailClient: MailClient = null;
 
+app.use(cors());
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({
-  extended: true
-}));
 
 app.post("/mail", function (req, res, next) {
-  var response = {};
-  const reqBody = req.body;
+  let response: ServiceResponse = null;
+  let contactBody: PersonContact = req.body;
 
-  if (reqBody && [].indexOf(reqBody.who) > -1) {
+  if (PersonContact.isPersonContact(contactBody)) {
     // Handle valid request
+    response = mailClient.sendMail(contactBody);
   } else {
     // Handle invalid request
-    response = buildInvalidParametersRespone();
+    response = ResponseUtil.buildInvalidParametersResponse(contactBody);
+    res.status(ERROR_BAD_REQUEST_CODE);
   }
 
   res.send(response);
 });
 
-app.get("/ping", function (req, res) {
-  res.send("pong");
-});
-
 app.get('/', function (request, response) {
-  var result = 'App is running'
-  response.send(result);
+  response.redirect('/status');
 });
 
-/*
-Sends a mail to ernesmancebo@gmail.com
-*/
-var doMail = function (params) {
-  var person: PersonContact = {
-    name: params.name,
-    email: params.email,
-    phone: params.phone,
-    message: params.message,
-    destination: [""]
+fs.readFile(`${process.cwd()}/config/config.json`, (err, buff) => {
+  let statusMessage = "Everything is ok";
+  let listenPort = process.env.PORT || 3000;
+
+  if (err) {
+    statusMessage = `Error starting up the server.\n${err}`;
+    console.error(statusMessage);
+  } else {
+    try {
+      const configObj = JSON.parse(buff.toString());
+
+      listenPort = configObj.app.listenPort;
+      mailClient = MailClient.setUp(configObj);
+    } catch (err) {
+      console.error(err);
+      statusMessage = `Error setting up the configuration:\n${err}`;
+    }
   }
-  return sendMail(person);
-};
 
-var sendMail = function (person) {
-  var me = this;
-
-  me.user = '';
-  me.pass = '';
-  var transporter = undefined; // nodemailer.createTransport('smtps://' + me.user + ':' + me.pass + '@smtp.mailgun.org');
-
-  var msg = '';
-  msg += "<h1>" + person.name + " wants to contact you</h1>\n";
-  msg += "<h2><p>Wrote:\n" + person.message + "</p></h2>\n";
-  msg += "<h3>The email is: " + person.email + "</h3>\n";
-  msg += "<h3>The phone is: " + person.phone + "</h3>\n";
-
-  var mailOptions = {
-    from: me.user,
-    to: person.destination,
-    subject: 'Contact from ' + person.name,
-    text: '',
-    html: msg
-  };
-
-  console.log(mailOptions);
-
-  var response = buildResponse({});
-
-  transporter.sendMail(mailOptions, function (err, info) {
-    if (err) {
-      console.log('Something went wrong:\n' + err);
-
-      response = buildResponse(err);
-      response.success = false;
-      response.statusCode = 500;
-    }
-
-    if (info) {
-      console.log('Message sent: ' + info.response);
-    }
+  app.get('/status', (req, res) => {
+    res.send(statusMessage);
   });
 
-  return response;
-};
+  app.listen(listenPort, function () {
+    console.info(`Server started @ port ${listenPort}`);
+  });
 
-/*
-The response message object
-*/
-var buildResponse = function (msg) {
-  return {
-    success: true,
-    msg: (msg !== null && msg !== undefined) ? msg : "",
-    statusCode: 200
-  };
-};
-const buildInvalidParametersRespone = (): ServiceResponse => {
-  let response: ServiceResponse = {
-    success: false,
-    message: ERROR_INVALID.errorDescription,
-    statusCode: ERROR_INVALID.errorCode,
-    errorList: [
-      `${ERROR_INVALID.errorCode}: ${ERROR_INVALID.errorDescription}`
-    ]
-  };
-
-  return response;
-}
-app.listen(process.env.PORT || port, function () {
-  console.log('Server started @ port ' + port);
 });
