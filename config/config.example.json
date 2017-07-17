@@ -1,0 +1,28 @@
+{
+  "app": {
+    "listenPort": 3000,
+    "requestLimiter": {
+      "timeoutSec": 30,
+      "maxAttempts": 2
+    }
+  },
+  "useSmtp": true,
+  "mail": {
+    "protocol": "smtps",
+    "host": "smtp.example.io",
+    "port": 25,
+    "secure": true,
+    "account": "postmaster@user.example.io",
+    "accountPass": "s3cret",
+    "service": "example"
+  },
+  "httpMail": {
+    "apiKey": "key-provided",
+    "apiHost": "api.example.net",
+    "path": "/postmaster.example.io/mail"
+  },
+  "destinations": [{
+    "app": "myApp",
+    "destinataries": ["example@example.com"]
+  }]
+}

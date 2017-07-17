@@ -1,4 +1,4 @@
-import { ERROR_INTERNAL, ERROR_INVALID, ErrorMap } from '../models/error-mapping';
+import { ERROR_INTERNAL, ERROR_INVALID, ERROR_RATE_EXCEEDED, ErrorMap } from '../models/error-mapping';
 import { ServiceResponse } from '../models/service-response';
 
 export class ResponseUtil {
@@ -22,6 +22,14 @@ export class ResponseUtil {
   public static buildInvalidParametersResponse(parameters: any): ServiceResponse {
     const parametersProvided: string = JSON.stringify(parameters);
     return this.buildBaseErrorResponse(ERROR_INVALID, [`input parameters: ${parametersProvided}`]);
+  }
+
+  public static buildTooManyRequestsResponse(waitSeconds?: number): ServiceResponse {
+    const prettyMsg: string[] = [];
+    if (waitSeconds) {
+      prettyMsg.push(`Too many requests, please try again in ${waitSeconds} seconds.`)
+    }
+    return this.buildBaseErrorResponse(ERROR_RATE_EXCEEDED, prettyMsg);
   }
 
   private static buildBaseErrorResponse(error: ErrorMap, errorList: string[]): ServiceResponse {

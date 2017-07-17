@@ -5,6 +5,7 @@ import { ServiceResponse } from './models/service-response';
 import { ResponseUtil } from './util/response-util';
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
+import * as rateLimit from 'express-rate-limit';
 import * as cors from 'cors';
 import * as fs from 'fs';
 
@@ -47,6 +48,16 @@ fs.readFile(`${process.cwd()}/config/config.json`, (err, buff) => {
 
       listenPort = configObj.app.listenPort;
       mailClient = MailClient.setUp(configObj);
+
+      const waitSeconds: number = configObj.app.requestLimiter.timeoutSec || 30;
+      const mailRateLimiter = new rateLimit({
+        windowMs: waitSeconds * 1000,
+        max: configObj.app.requestLimiter.maxAttempts || 2,
+        delay: 0,
+        message: JSON.stringify(ResponseUtil.buildTooManyRequestsResponse(waitSeconds))
+      });
+
+      app.use('/mail', mailRateLimiter);
     } catch (err) {
       console.error(err);
       statusMessage = `Error setting up the configuration:\n${err}`;
