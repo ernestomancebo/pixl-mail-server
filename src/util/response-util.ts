@@ -19,9 +19,9 @@ export class ResponseUtil {
     return this.buildBaseErrorResponse(ERROR_INTERNAL, [`There was an error: ${parametersProvided}`]);
   }
 
-  public static buildInvalidParametersResponse(parameters: any): ServiceResponse {
+  public static buildInvalidParametersResponse(parameters: any, missingParameter?: string): ServiceResponse {
     const parametersProvided: string = JSON.stringify(parameters);
-    return this.buildBaseErrorResponse(ERROR_INVALID, [`input parameters: ${parametersProvided}`]);
+    return this.buildBaseErrorResponse(ERROR_INVALID, missingParameter ? [`Missing parameter: ${missingParameter}`] : [`input parameters: ${parametersProvided}`]);
   }
 
   public static buildTooManyRequestsResponse(waitSeconds?: number): ServiceResponse {
