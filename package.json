@@ -5,7 +5,7 @@
   "main": "./app/app.js",
   "scripts": {
     "test": "test.js",
-    "start": "node ./app/app.js",
+    "start": "tsc ; node ./app/app.js",
     "build": "tsc",
     "build:live": "nodemon --exec ./node_modules/.bin/ts-node -- ./src/app.ts",
     "debug": "npm run build ; node --nolazy --debug-brk=5858 ./app/app.js"
