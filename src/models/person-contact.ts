@@ -6,21 +6,23 @@ export class PersonContact {
   app: string;
   destination?: string[];
 
-  public static isPersonContact(obj: any): boolean {
+  public static isPersonContact(obj: any): string {
     const requiredProperties = [
       'name',
       'email',
       'phone',
-      'message'
+      'message',
+      'app'
     ];
 
-    requiredProperties.forEach((prop) => {
+    let missingParameter = null;
+    for (let prop of requiredProperties) {
       if (!obj.hasOwnProperty(prop)) {
-        return false;
+        missingParameter = prop;
       }
-    });
+    }
 
-    return true;
+    return missingParameter;
   }
 }
 

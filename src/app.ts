@@ -19,12 +19,13 @@ app.post("/mail", function (req, res, next) {
   let response: ServiceResponse = null;
   let contactBody: PersonContact = req.body;
 
-  if (PersonContact.isPersonContact(contactBody)) {
+  const missingParameter: string = PersonContact.isPersonContact(contactBody);
+  if (!missingParameter) {
     // Handle valid request
     response = mailClient.sendMail(contactBody);
   } else {
     // Handle invalid request
-    response = ResponseUtil.buildInvalidParametersResponse(contactBody);
+    response = ResponseUtil.buildInvalidParametersResponse(contactBody, missingParameter);
     res.status(ERROR_BAD_REQUEST_CODE);
   }
 
